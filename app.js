@@ -9,7 +9,7 @@ const port = 3000;
 app.use(cors()) // allow CORS requests
 app.use(bodyParser.json()) // parse application/json
 
-const appliedTeamsCache = new NodeCache({ stdTTL: 60 })
+const appliedTeamsCache = new NodeCache({ stdTTL: 10 })
 
 app.post('/coach/apply-teams', (req, res) => {
   const coach = req.body.coach
