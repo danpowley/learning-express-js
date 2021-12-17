@@ -38,17 +38,6 @@ app.post('/coach/apply-teams', (req, res) => {
     matchupData.coaches.push(oppCoachTeams.coach)
 
     for (const oppCoachTeam of oppCoachTeams.teams) {
-      const matches = {
-        availableTo: [],
-        offerMadeBy: [],
-        rejectedBy: [],
-        opponentOfferMadeTo: []
-      }
-
-      for (team of teams) {
-        matches.availableTo.push(team.id)
-      }
-
       matchupData.teams.push(
         {
           id: oppCoachTeam.id,
@@ -57,7 +46,9 @@ app.post('/coach/apply-teams', (req, res) => {
           teamValue: oppCoachTeam.teamValue,
           division: oppCoachTeam.division,
           coachId: oppCoachTeams.coach.id,
-          matches: matches
+          offers: oppCoachTeam.offers,
+          rejections: oppCoachTeam.rejections,
+          isActivated: oppCoachTeam.isActivated
         }
       )
     }
