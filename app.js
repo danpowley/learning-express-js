@@ -51,7 +51,10 @@ setInterval(function () {
       team2 = coachSettings
 
       if (team1 && team2) {
-        blackboxMatches.push([team1, team2])
+        blackboxMatches.push({
+          home: team1,
+          away: team2
+        })
       }
 
       team1 = null
