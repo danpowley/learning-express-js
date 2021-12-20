@@ -12,6 +12,7 @@ app.use(bodyParser.json()) // parse application/json
 
 const gameFinderAppliedCache = new NodeCache({ stdTTL: 10 })
 
+let blackboxDrawId = 1
 let blackboxLastDrawDate = moment()
 const blackboxDrawFrequencyInMinutes = 1
 const blackboxAppliedCache = new NodeCache({ stdTTL: 3600 }) // only hold long enough till the draw is made
@@ -26,7 +27,7 @@ function getRandomArrayElement(array) {
 }
 
 setInterval(function () {
-  console.log('Making blackbox draw')
+  console.log('Making blackbox draw', blackboxDrawId, new Date())
 
   const blackboxDrawTeams = []
   for (const coachName of blackboxAppliedCache.keys()) {
@@ -69,6 +70,9 @@ setInterval(function () {
     blackboxDrawCache.set(drawKey, {drawKey: drawKey, date: new Date(), matches: blackboxMatches})
   }
 
+  // increment the draw id so the UI knows its not on the active one anymore
+  blackboxDrawId++
+
   // reset the applied teams
   blackboxAppliedCache.flushAll()
 
@@ -77,7 +81,7 @@ setInterval(function () {
 
 }, blackboxDrawFrequencyInMinutes * 60000)
 
-app.post('/blackbox/apply', (req, res) => {
+app.post('/blackbox/activate', (req, res) => {
   const coach = req.body.coach
   const teams = req.body.teams
 
@@ -89,10 +93,18 @@ app.post('/blackbox/apply', (req, res) => {
     }
   )
 
-  res.send({coachCount: blackboxAppliedCache.keys().length})
+  res.send({drawId: blackboxDrawId, teamCount: teams.length})
 })
 
-app.get('/blackbox/current', (req, res) => {
+app.post('/blackbox/deactivate', (req, res) => {
+  const coach = req.body.coach
+
+  const deleteResult = blackboxAppliedCache.del(coach.name)
+
+  res.send({coachRemoved: deleteResult})
+})
+
+function getBlackboxCurrentInfo() {
   let coachCount = 0
   let teamCount = 0
   const timeOfNextDraw = blackboxLastDrawDate.clone().add(blackboxDrawFrequencyInMinutes, 'minutes');
@@ -105,10 +117,15 @@ app.get('/blackbox/current', (req, res) => {
     teamCount += blackboxApplication.teams.length
   }
 
-  res.send({ coachCount: coachCount, teamCount: teamCount, timeOfNextDraw: timeOfNextDraw })
-})
+  return {
+    drawId: blackboxDrawId,
+    coachCount: coachCount,
+    teamCount: teamCount,
+    timeOfNextDraw: timeOfNextDraw
+  }
+}
 
-app.get('/blackbox/draw-results', (req, res) => {
+function getBlackboxDrawResults() {
   const blackboxDrawCacheKeys = blackboxDrawCache.keys()
 
   blackboxDrawCacheKeys.sort(function (a, b) {
@@ -130,7 +147,14 @@ app.get('/blackbox/draw-results', (req, res) => {
     }
   }
 
-  res.send(results)
+  return results
+}
+
+app.get('/blackbox/latest', (req, res) => {
+  res.send({
+    currentInfo: getBlackboxCurrentInfo(),
+    drawResults: getBlackboxDrawResults()
+  })
 })
 
 app.post('/game-finder/apply', (req, res) => {
