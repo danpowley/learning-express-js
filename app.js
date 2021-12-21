@@ -27,8 +27,6 @@ function getRandomArrayElement(array) {
 }
 
 setInterval(function () {
-  console.log('Making blackbox draw', blackboxDrawId, new Date())
-
   const blackboxDrawTeams = []
   for (const coachName of blackboxAppliedCache.keys()) {
     const blackboxApplication = blackboxAppliedCache.get(coachName)
@@ -158,49 +156,27 @@ app.get('/blackbox/latest', (req, res) => {
 })
 
 app.post('/game-finder/apply', (req, res) => {
-  const coach = req.body.coach
-  const teams = req.body.teams
+  const gameFinderCoachRequest = req.body
 
   gameFinderAppliedCache.set(
-    coach.name,
-    {
-      coach: coach,
-      teams: teams
-    }
+    gameFinderCoachRequest.coach.name,
+    gameFinderCoachRequest
   )
 
-  let matchupData = {teams: [], coaches: []}
+  const opponentGameFinderCoachRequests = []
 
   for (const oppCoachName of gameFinderAppliedCache.keys()) {
-    if (oppCoachName === coach.name) {
+    if (oppCoachName === gameFinderCoachRequest.coach.name) {
       continue
     }
 
-    const oppCoachTeams = gameFinderAppliedCache.get(oppCoachName)
-    if (oppCoachTeams === undefined) {
-      continue
-    }
-
-    matchupData.coaches.push(oppCoachTeams.coach)
-
-    for (const oppCoachTeam of oppCoachTeams.teams) {
-      matchupData.teams.push(
-        {
-          id: oppCoachTeam.id,
-          name: oppCoachTeam.name,
-          race: oppCoachTeam.race,
-          teamValue: oppCoachTeam.teamValue,
-          division: oppCoachTeam.division,
-          coachId: oppCoachTeams.coach.id,
-          offers: oppCoachTeam.offers,
-          rejections: oppCoachTeam.rejections,
-          isActivated: oppCoachTeam.isActivated
-        }
-      )
+    let opponentGameFinderCoachRequest = gameFinderAppliedCache.get(oppCoachName)
+    if (opponentGameFinderCoachRequest !== undefined) {
+      opponentGameFinderCoachRequests.push(opponentGameFinderCoachRequest)
     }
   }
 
-  res.send(matchupData)
+  res.send(opponentGameFinderCoachRequests)
 })
 
 app.listen(port, () => {
