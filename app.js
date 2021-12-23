@@ -10,8 +10,10 @@ const port = 3000;
 app.use(cors()) // allow CORS requests
 app.use(bodyParser.json()) // parse application/json
 
+/** Game Finder cache */
 const gameFinderAppliedCache = new NodeCache({ stdTTL: 10 })
 
+/** Blackbox caches, state and config */
 let blackboxDrawId = 1
 let blackboxLastDrawDate = moment()
 const blackboxDrawFrequencyInMinutes = 1
@@ -26,6 +28,9 @@ function getRandomArrayElement(array) {
   return array[getRandomInteger(array.length)]
 }
 
+/**
+ * Run the Blackbox draw every blackboxDrawFrequencyInMinutes
+ */
 setInterval(function () {
   const blackboxDrawTeams = []
   for (const coachName of blackboxAppliedCache.keys()) {
