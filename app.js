@@ -10,6 +10,12 @@ const port = 3000;
 app.use(cors()) // allow CORS requests
 app.use(bodyParser.json()) // parse application/json
 
+app.get('/available', (req, res) => {
+  res.send({
+    available: true
+  })
+})
+
 /** Game Finder cache */
 const gameFinderAppliedCache = new NodeCache({ stdTTL: 10 })
 
