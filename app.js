@@ -5,7 +5,7 @@ const NodeCache = require('node-cache')
 const moment = require('moment')
 
 const app = express()
-const port = 80;
+const PORT = process.env.PORT || 3000
 
 app.use(cors()) // allow CORS requests
 app.use(bodyParser.json()) // parse application/json
@@ -190,6 +190,6 @@ app.post('/game-finder/apply', (req, res) => {
   res.send(opponentGameFinderCoachRequests)
 })
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`)
+app.listen(PORT, () => {
+  console.log(`App listening at http://localhost:${PORT}`)
 })
