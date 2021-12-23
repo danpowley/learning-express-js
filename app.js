@@ -5,7 +5,7 @@ const NodeCache = require('node-cache')
 const moment = require('moment')
 
 const app = express()
-const port = 3000;
+const port = 80;
 
 app.use(cors()) // allow CORS requests
 app.use(bodyParser.json()) // parse application/json
